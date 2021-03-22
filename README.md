@@ -7,5 +7,3 @@ A simple python script that:
 - Downloads the videos
 - Compiles the videos into one compilation
 - Uploads the compilation to YouTube
-
-The picking and compiling functions are interchangeable
