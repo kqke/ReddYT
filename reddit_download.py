@@ -15,7 +15,17 @@ def download(
                     min_q=False,
                     auto_max=True
                     ):
-
+    """
+    Downloads the Reddit videos specified by urls to the directory specified by directory.
+    :param urls: (List(str)) An iterable containing urls to Reddit posts with video hosted on Reddit.
+    :param directory: (str) A directory for saving the clips.
+    :param max_s: (int) Maximum size of video to be downloaded.
+    :param max_d: (int) Maximum duration of video to be downloaded.
+    :param max_q: (bool) Get video with maximum quality.
+    :param min_q: (bool) Get video with minimum quality.
+    :param auto_max: (bool) Should the maximum available quality be used automatically?
+    :return: A list of the path names of the downloaded files.
+    """
     downloaded = []
 
     for url in urls:
