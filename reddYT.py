@@ -1,7 +1,10 @@
 from utils import *
 
-from YT_upload import upload
+from reddit_picker import reddit_picker as default_pick_func
 from reddit_download import download
+from clip_compiler import clip_compiler as default_compile_func
+from YT_upload import upload
+
 
 from tempfile import TemporaryDirectory
 import os
