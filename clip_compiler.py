@@ -24,9 +24,10 @@ def clip_compiler(clip_paths, transition=None, intro=None, middle=None, outro=No
     transition_clip = VideoFileClip(transition) if transition else None
 
     added_mid = False if middle else True
+    mid_point = len(clip_paths) >> 1
 
     for i in range(len(clip_paths)):
-        if not added_mid and i > (len(clip_paths) >> 1):
+        if not added_mid and i > mid_point:
             to_concatenate.append(VideoFileClip(middle))
             added_mid = True
         to_concatenate.append(VideoFileClip(clip_paths[i]))

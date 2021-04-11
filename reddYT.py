@@ -1,12 +1,16 @@
 from utils import *
 
-from reddit_download import download
+from downloaders.reddit_download import download
 from clip_compiler import clip_compiler as default_compile_func
 from YT_upload import upload
 
 from tempfile import TemporaryDirectory
 from functools import partial
 import os
+
+
+# TODO - Make runnable from command-line, with user providing inputs via commandline or config file.
+# TODO - Make runnable as a library/framework
 
 
 def run(args):
@@ -35,10 +39,9 @@ def download_compile_upload(youtube_client_secret,
     """
 
     # Get a temporary directory for the clips
-    temp_dir = TemporaryDirectory()
+    with TemporaryDirectory() as temp_dir:
 
-    try:
-        # Download clips
+        # Download clips from reddit
         if not download_args:
             download_args = {}
         downloaded_paths = download(urls=reddit_clips, directory=temp_dir.name, **download_args)
@@ -46,9 +49,7 @@ def download_compile_upload(youtube_client_secret,
         # Compile clips
         if not compile_func:
             compile_func = partial(default_compile_func, **compile_args)
-
-        upload_path = compile_func(clip_paths=downloaded_paths, output_dir=temp_dir)
-
+        upload_path = compile_func(clip_paths=downloaded_paths, output_dir=temp_dir.name)
         if not os.path.exists(upload_path):
             exit(INVALID_FILE)
 
@@ -56,10 +57,6 @@ def download_compile_upload(youtube_client_secret,
         if not upload_args:
             upload_args = {}
         upload(upload_path, youtube_client_secret, **upload_args)
-
-    finally:
-        # Clean up temporary directory
-        temp_dir.cleanup()
 
 
 if __name__ == "__main__":
