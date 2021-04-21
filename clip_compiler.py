@@ -1,7 +1,7 @@
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 
 
-def clip_compiler(clip_paths, transition=None, intro=None, middle=None, outro=None, output_dir='/'):
+def compile_clips(clip_paths, transition=None, intro=None, middle=None, outro=None, output_dir='/'):
     """
     Default compiler func for ReddYT.
     Concatenates the clips to each other,

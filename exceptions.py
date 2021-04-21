@@ -1,14 +1,22 @@
-class NotADownloadableLinkError(Exception):
+class RedditException(Exception):
     pass
 
 
-class BaseDownloaderException(Exception):
+class DownloadException(Exception):
     pass
 
 
-class ResourceNotFound(Exception):
+class NotADownloadableLinkError(DownloadException):
     pass
 
 
-class SiteDownloaderError(Exception):
+class BaseDownloaderException(DownloadException):
+    pass
+
+
+class ResourceNotFound(DownloadException):
+    pass
+
+
+class SiteDownloaderError(DownloadException):
     pass

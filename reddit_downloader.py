@@ -4,7 +4,7 @@ import time
 import bs4
 import json
 import youtube_dl
-import tempfile
+from tempfile import TemporaryDirectory
 import os
 
 from exceptions import NotADownloadableLinkError, BaseDownloaderException, ResourceNotFound, SiteDownloaderError
@@ -80,17 +80,17 @@ def imgur_get_data(url):
     return image_dict
 
 
-def imgur_get_image_url(data):
-    return 'https://i.imgur.com/' + data['hash'] + imgur_validate_extension(data['ext'])
-
-
 def imgur_validate_extension(ext_suffix):
-    possible_extensions = ('.jpg', '.png', '.mp4', '.gif')
+    possible_extensions = ('.mp4', '.gif')
     selection = [ext for ext in possible_extensions if ext == ext_suffix]
     if len(selection) == 1:
         return selection[0]
     else:
         raise SiteDownloaderError(f'"{ext_suffix}" is not recognized as a valid extension for Imgur')
+
+
+def imgur_get_image_url(data):
+    return 'https://i.imgur.com/' + data['hash'] + imgur_validate_extension(data['ext'])
 
 
 def imgur_download(url):
@@ -99,13 +99,20 @@ def imgur_download(url):
     if 'album_images' in raw_data:
         images = raw_data['album_images']
         for image in images['images']:
-            image_url = imgur_get_image_url(image)
+            try:
+                image_url = imgur_get_image_url(image)
+            except SiteDownloaderError:
+                # Log error
+                continue
             content = base_download(image_url, 1000), image['ext']
             ret.append(content)
     else:
         image_url = imgur_get_image_url(raw_data)
         content = base_download(image_url, 1000), raw_data['ext']
         ret.append(content)
+
+    if not ret:
+        raise SiteDownloaderError(f'Did not find any files with valid extension in this Imgur link: {url}')
 
     return ret
 
@@ -151,7 +158,7 @@ def gfycat_download(url):
 
 def yt_dl_download(options, url):
     options['quiet'] = True
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with TemporaryDirectory() as temp_dir:
         options['outtmpl'] = temp_dir + '/' + 'test.%(ext)s'
         try:
             with youtube_dl.YoutubeDL(options) as ydl:
@@ -181,35 +188,32 @@ def youtube_download(url):
     return [out]
 
 
-def get_downloader(url):
+def download_by_url(url):
     url_beginning = r'\s*(https?://(www\.)?)'
     if re.match(url_beginning + r'(i\.)?imgur.*\.gifv$', url):
-        return imgur_download
+        return imgur_download(url)
     elif re.match(url_beginning + r'gfycat\.', url):
-        return gfycat_download
+        return gfycat_download(url)
     elif re.match(url_beginning + r'gifdeliverynetwork', url):
-        return gifdeliverynetwork_download
+        return gifdeliverynetwork_download(url)
     elif re.match(url_beginning + r'(m\.)?imgur.*', url):
-        return imgur_download
+        return imgur_download(url)
     elif re.match(url_beginning + r'v\.redd\.it', url):
-        return vreddit_download
+        return vreddit_download(url)
     elif re.match(url_beginning + r'(m\.)?youtu\.?be', url):
-        return youtube_download
+        return youtube_download(url)
     else:
         raise NotADownloadableLinkError(f'No downloader module exists for url {url}')
 
 
-def generate_filename():
-    return ''
-
-
 def download(url, directory, filename):
-    downloader = get_downloader(url)
-    downloaded = downloader(url)
+
+    downloaded = download_by_url(url)
     ret = []
-    for content, ext in downloaded:
-        # filename = directory + '/' + generate_filename() + ext
-        filename = directory + '/' + filename + ext
+
+    for i, (content, ext) in enumerate(downloaded):
+        filename = directory + '/' + filename + str(i) + ext
         save_content(content, filename)
         ret.append(filename)
+
     return ret
