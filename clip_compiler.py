@@ -37,7 +37,8 @@ def compile_clips(clip_paths, transition=None, intro=None, middle=None, outro=No
     if outro:
         to_concatenate.append(VideoFileClip(outro))
 
-    final_clip = concatenate_videoclips(to_concatenate)
+    final_clip = concatenate_videoclips(to_concatenate, method='compose')
     final_clip.write_videofile(output_file)
+    final_clip.close()
 
     return output_file

@@ -1,4 +1,6 @@
+import logging
 import os
+from logs import *
 from tempfile import TemporaryDirectory
 
 from exceptions import *
@@ -8,6 +10,7 @@ from clip_compiler import compile_clips
 from YT_upload import upload
 
 
+@log(logging.DEBUG, '')
 def yield_and_download(reddit_generator, directory, limit=10):
 
     if limit <= 0:
